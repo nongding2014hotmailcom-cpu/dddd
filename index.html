@@ -50,8 +50,10 @@
         .btn-group {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 15px;
             margin-top: 20px;
+            min-height: 60px; /* เพิ่มพื้นที่เพื่อรองรับการขยับ */
         }
         .btn {
             padding: 12px 25px;
@@ -62,6 +64,7 @@
             cursor: pointer;
             font-family: 'Prompt', sans-serif;
             transition: transform 0.2s, background-color 0.2s;
+            white-space: nowrap;
         }
         /* ปุ่มยอมให้ง้อ */
         .btn-yes {
@@ -73,13 +76,12 @@
             background-color: #3b9c7b;
             transform: scale(1.05);
         }
-        /* ปุ่มงอนอยู่ (ปุ่มที่วิ่งหนี) */
+        /* ปุ่มงอนอยู่ (เริ่มต้นเป็นปุ่มปกติ ไม่ทับซ้อน) */
         .btn-no {
             background-color: #ff4b6e;
             color: white;
             box-shadow: 0 5px 15px rgba(255, 75, 110, 0.4);
-            position: absolute; /* จำเป็นสำหรับการขยับหนี */
-            transition: all 0.1s ease;
+            transition: background-color 0.2s;
         }
         /* ส่วนข้อความง้อและปุ่มเพลง */
         #hidden-message {
@@ -118,10 +120,10 @@
             <span class="emoji-display" id="main-emoji">🫰</span>
             <p>หายงอนเค้านะครับคนเก่ง ให้เค้าง้อเธอได้ไหม? 🙏❤️</p>
             
-            <div class="btn-group" style="height: 60px; position: relative;">
+            <div class="btn-group">
                 <!-- ปุ่มตอบตกลง -->
                 <button class="btn btn-yes" onclick="forgiveMe()">ยอมให้ง้อก็ได้ 💖</button>
-                <!-- ปุ่มงอน (ปุ่มที่ขยับหนี) -->
+                <!-- ปุ่มงอน (เริ่มขยับหนีเมื่อตรวจพบ Action) -->
                 <button class="btn btn-no" id="runaway-btn" onmouseover="moveButton()" ontouchstart="moveButton()" onclick="moveButton()">งอนอยู่ ไม่ให้ง้อ! 😤</button>
             </div>
         </div>
@@ -134,8 +136,7 @@
                 ตั้งแต่วันนี้ไปเค้าจะดูแลเธอให้ดีกว่าเดิม ไม่ดื้อไม่ซนแล้วครับ 🥺✨<br>
                 เค้าตั้งใจเลือกเพลงนี้มาให้เธอฟังด้วยนะ กดฟังดูสิ...
             </p>
-            <!-- 📌 เปลี่ยนลิงก์เพลงของคุณที่ช่อง href="..." ด้านล่างนี้ได้เลยครับ -->
-            <a href="https://youtu.be/py4E_tlNMQ8?si=n2s2gXvQDmCPahvo    " target="_blank" class="btn-music">🎵 กดตรงนี้เพื่อฟังเพลงที่เค้าให้เธอนะ</a>
+            <a href="https://youtu.be/py4E_tlNMQ8?si=n2s2gXvQDmCPahvo" target="_blank" class="btn-music">🎵 กดตรงนี้เพื่อฟังเพลงที่เค้าให้เธนะ</a>
         </div>
     </div>
 
@@ -145,8 +146,14 @@
             var btn = document.getElementById('runaway-btn');
             var card = document.getElementById('main-card');
 
-            // หนีไม่ไกล เหมาะกับมือถือ
-            var moveRange = 55;
+            // เปลี่ยนให้เป็น absolute เฉพาะเมื่อเริ่มขยับหนี เพื่อไม่ให้ทับในตอนแรก
+            if (btn.style.position !== 'absolute') {
+                btn.style.position = 'absolute';
+                btn.style.transition = 'all 0.1s ease';
+            }
+
+            // เพิ่มระยะการหนีให้พ้นจากปุ่มตกลง
+            var moveRange = 80;
 
             var currentLeft = btn.offsetLeft;
             var currentTop = btn.offsetTop;
@@ -154,11 +161,11 @@
             var randomX = currentLeft + (Math.random() * moveRange * 2 - moveRange);
             var randomY = currentTop + (Math.random() * moveRange * 2 - moveRange);
 
-            // จำกัดไม่ให้ปุ่มหลุดออกจากการ์ด
-            var minX = 10;
-            var minY = 5;
-            var maxX = Math.max(minX, card.clientWidth - btn.offsetWidth - 10);
-            var maxY = Math.max(minY, card.clientHeight - btn.offsetHeight - 5);
+            // จำกัดขอบเขตไม่ให้ปุ่มหลุดออกนอกกล่องการ์ด
+            var minX = 15;
+            var minY = 15;
+            var maxX = card.clientWidth - btn.offsetWidth - 15;
+            var maxY = card.clientHeight - btn.offsetHeight - 15;
 
             randomX = Math.max(minX, Math.min(randomX, maxX));
             randomY = Math.max(minY, Math.min(randomY, maxY));
@@ -169,9 +176,7 @@
 
         // ฟังก์ชันเมื่อยอมให้ง้อ
         function forgiveMe() {
-            // ซ่อนกล่องคำถามและปุ่มเดิม
             document.getElementById('ask-section').style.display = 'none';
-            // แสดงข้อความง้อและปุ่มเพลง
             document.getElementById('hidden-message').style.display = 'block';
         }
     </script>
